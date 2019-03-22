@@ -1,0 +1,16 @@
+<div nz-row>
+  <div nz-col nzSpan="4">
+    <nz-tree
+      [nzData]="nodes"
+      (nzClick)="goCategory($event)"
+      nzExpandAll>
+    </nz-tree>
+  </div>
+  <div nz-col nzSpan="20">
+    <nz-breadcrumb>
+      <nz-breadcrumb-item *ngFor="let node of breadcrumbNodes">
+        <a>{{node.title}}</a>
+      </nz-breadcrumb-item>
+    </nz-breadcrumb>
+  </div>
+</div>

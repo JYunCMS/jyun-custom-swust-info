@@ -1,5 +1,18 @@
-<div style="text-align:center">
-  <h1>
-    Welcome to JYunCustomSwustInfo!
-  </h1>
-</div>
+<nz-layout class="layout">
+  <nz-header style="background: #fff; height: 48px;">
+    <ul nz-menu [nzMode]="'horizontal'" style="background: #fff; height: 100%;">
+      <li nz-submenu *ngFor="let node of nodes" (click)="goCategory(node)">
+        <span title>{{node.title}}</span>
+        <ul>
+          <li nz-menu-item *ngFor="let subNode of node.children" (click)="goCategory(subNode)">{{subNode.title}}</li>
+        </ul>
+      </li>
+    </ul>
+  </nz-header>
+  <nz-content style="padding:0 50px;">
+    <div style="background: #fff; padding: 24px; min-height: 280px;">
+      <router-outlet></router-outlet>
+    </div>
+  </nz-content>
+  <nz-footer style="text-align: center;">Copyright ©2019 By 西南科技大学 信息工程学院. All Rights Reserved</nz-footer>
+</nz-layout>
