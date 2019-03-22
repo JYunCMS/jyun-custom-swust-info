@@ -2,6 +2,11 @@ import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, NavigationEnd, Router, UrlSegment } from '@angular/router';
 import { AppComponent } from '../app.component';
 import { NzFormatEmitEvent, NzTreeNode } from 'ng-zorro-antd';
+import { RequestService } from '../request.service';
+import { Article } from '../domain/article';
+
+const count = 5;
+const fakeDataUrl = 'https://randomuser.me/api/?results=5&inc=name,gender,email,nat&noinfo';
 
 @Component({
   selector: 'app-category',
@@ -15,9 +20,15 @@ export class CategoryComponent implements OnInit {
   breadcrumbNodes: NzTreeNode[] = [];
   is404Url = true;
 
+  initLoading = true;
+  loadingMore = false;
+  articleList: Article[] = [];
+  articleListData: Article[] = [];
+
   constructor(
     private route: ActivatedRoute,
-    private router: Router
+    private router: Router,
+    private requestService: RequestService
   ) {
   }
 
@@ -30,6 +41,14 @@ export class CategoryComponent implements OnInit {
           this.initCurrentSecondLevelNodeListWhenRouterEvent(event.urlAfterRedirects);
         }
       });
+
+    this.requestService.getArticlesByCategory('xueyuanjianjie', 0, 3)
+      .subscribe(result => {
+        this.articleListData = result;
+        this.articleList = result;
+        this.initLoading = false;
+      });
+
   }
 
   private initCurrentSecondLevelNodeListWhenNgInit(url: UrlSegment[]) {
@@ -96,4 +115,15 @@ export class CategoryComponent implements OnInit {
     urlSegmentList.reverse();
     this.router.navigate(urlSegmentList);
   }
+
+  onLoadMore(): void {
+    this.loadingMore = true;
+    this.requestService.getArticlesByCategory('xueyuanjianjie', 1, 3)
+      .subscribe(result => {
+        this.articleListData = this.articleListData.concat(result);
+        this.articleList = [...this.articleListData];
+        this.loadingMore = false;
+      });
+  }
+
 }
