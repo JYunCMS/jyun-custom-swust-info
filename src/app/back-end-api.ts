@@ -9,4 +9,5 @@ export class BackEndApi {
   // Public RESTful API
   static categories = BackEndApi.publicInterface + '/categories';
   static articlesByCategory = BackEndApi.publicInterface + '/articles-by-category';
+  static articleById = BackEndApi.publicInterface + '/article-by-id';
 }

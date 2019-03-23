@@ -31,6 +31,13 @@ export class RequestService {
       .pipe(catchError(this.handleError<Article[]>('getArticlesByCategory')));
   }
 
+  getArticleById(id: string): Observable<Article> {
+    const params = new HttpParams()
+      .append('id', id);
+    return this.http.get<Article>(BackEndApi.articleById + '?' + params)
+      .pipe(catchError(this.handleError<Article>('getArticleById')));
+  }
+
   private handleError<T>(operation = 'operation') {
     return (error: any): Observable<T> => {
       // 将错误信息打印到控制台

@@ -60,7 +60,7 @@
               [nzTitle]="nzTitle"
               [nzDescription]="nzDescription">
               <ng-template #nzTitle>
-                <a style="font-size: large">{{ item.title }}</a>
+                <a style="font-size: large" (click)="goArticle(item)">{{ item.title }}</a>
               </ng-template>
               <ng-template #nzDescription>
                 <span style="font-size: small;">{{item.abstracts}}</span>

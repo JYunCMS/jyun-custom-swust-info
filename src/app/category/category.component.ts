@@ -41,6 +41,7 @@ export class CategoryComponent implements OnInit {
   articleList: Article[] = [];
   articleListData: Article[] = [];
   currentPageNumber: number;
+  everyPageSizeNumber = 10;
   currentShowArticleListCategoryUrlAlias: string;
 
   constructor(
@@ -128,9 +129,8 @@ export class CategoryComponent implements OnInit {
     const currentNode = this.breadcrumbNodes[this.breadcrumbNodes.length - 1];
     if (currentNode.origin.customPage != null && currentNode.origin.customPage !== '') {
       // 有节点自定义页，展示自定义页
-      this.showWhatContent = this.SHOW_CUSTOM_PAGE;
       this.customPageContent = this.sanitizer.bypassSecurityTrustHtml(currentNode.origin.customPage);
-      return;
+      this.showWhatContent = this.SHOW_CUSTOM_PAGE;
     } else if (!currentNode.isLeaf) {
       // 没有节点自定义页，又不是叶子结点，继续向下一级分类前进
       const urlSegmentList: string[] = [];
@@ -139,14 +139,36 @@ export class CategoryComponent implements OnInit {
       }
       urlSegmentList.push(currentNode.children[0].key);
       this.router.navigate(urlSegmentList);
-      return;
+    } else if (this.route.snapshot.url[this.route.snapshot.url.length - 1].path.substring(
+      this.route.snapshot.url[this.route.snapshot.url.length - 1].path.length - 5,
+      this.route.snapshot.url[this.route.snapshot.url.length - 1].path.length)
+      === '.html') {
+      // 没有节点自定义页，是叶子结点，是在访问 .html 文章，展示具体文章
+      if (this.article != null) {
+        this.showWhatContent = this.SHOW_ARTICLE;
+      } else {
+        this.requestService.getArticleById(this.route.snapshot.url[this.route.snapshot.url.length - 1].path.substring(
+          0, this.route.snapshot.url[this.route.snapshot.url.length - 1].path.length - 5))
+          .subscribe(result => {
+            if (result == null) {
+              this.nzMsgService.error('数据请求出错，请检查网络连接！');
+            } else if (result.id == null) {
+              this.nzMsgService.warning('数据请求出错，指定文章不存在！');
+              this.router.navigate(['404']);
+            } else {
+              this.article = result;
+              this.articleContent = this.sanitizer.bypassSecurityTrustHtml(this.article.content);
+              this.showWhatContent = this.SHOW_ARTICLE;
+            }
+          });
+      }
     } else {
-      // 叶子结点没有自定义页，展示叶子结点文章列表
+      // 没有节点自定义页，是叶子结点，展示叶子结点文章列表
       this.initLoading = true;
       this.showWhatContent = this.SHOW_ARTICLE_LIST;
       this.currentShowArticleListCategoryUrlAlias = currentNode.key;
       this.currentPageNumber = 0;
-      this.requestService.getArticlesByCategory(currentNode.key, 0, 10)
+      this.requestService.getArticlesByCategory(currentNode.key, 0, this.everyPageSizeNumber)
         .subscribe(result => {
           if (result == null) {
             this.initLoading = false;
@@ -163,7 +185,6 @@ export class CategoryComponent implements OnInit {
             this.showLoadingMore = true;
           }
         });
-      return;
     }
   }
 
@@ -193,14 +214,15 @@ export class CategoryComponent implements OnInit {
     this.initLoading = true;
     this.showLoadingMore = false;
     this.currentPageNumber++;
-    this.requestService.getArticlesByCategory(this.currentShowArticleListCategoryUrlAlias, this.currentPageNumber, 5)
+    this.requestService.getArticlesByCategory(this.currentShowArticleListCategoryUrlAlias, this.currentPageNumber, this.everyPageSizeNumber)
       .subscribe(result => {
         if (result == null) {
           this.initLoading = false;
           this.nzMsgService.error('数据请求出错，请检查网络连接！');
+          this.showLoadingMore = true;
         } else if (result.length === 0) {
           this.initLoading = false;
-          this.nzMsgService.warning('没有更多');
+          this.nzMsgService.warning('没有更多……');
         } else {
           this.initLoading = false;
           this.articleListData = this.articleListData.concat(result);
@@ -208,5 +230,16 @@ export class CategoryComponent implements OnInit {
           this.showLoadingMore = true;
         }
       });
+  }
+
+  goArticle(item: Article) {
+    this.article = item;
+    this.articleContent = this.sanitizer.bypassSecurityTrustHtml(this.article.content);
+    const urlSegmentList: string[] = [];
+    for (const node of this.breadcrumbNodes) {
+      urlSegmentList.push(node.key);
+    }
+    urlSegmentList.push(item.id + '.html');
+    this.router.navigate(urlSegmentList);
   }
 }
