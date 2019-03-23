@@ -9,14 +9,14 @@
   <div nz-col nzSpan="20">
     <nz-breadcrumb>
       <nz-breadcrumb-item *ngFor="let node of breadcrumbNodes">
-        <a>{{node.title}}</a>
+        <a (click)="goCategory2(node)">{{node.title}}</a>
       </nz-breadcrumb-item>
     </nz-breadcrumb>
-    <!-- 展示自定义页 -->
+    <!-- 当……时候，展示自定义页 -->
     <div *ngIf="showWhatContent===SHOW_CUSTOM_PAGE">
       <div [innerHTML]="customPageContent" style="margin-top: 30px;"></div>
     </div>
-    <!-- 展示文章 -->
+    <!-- 当……时候，展示文章 -->
     <div *ngIf="showWhatContent===SHOW_ARTICLE">
       <div align="center">
         <h1>{{article.title}}</h1>
@@ -45,7 +45,7 @@
         </tr>
       </table>
     </div>
-    <!-- 展示文章列表 -->
+    <!-- 当……时候，展示文章列表 -->
     <div *ngIf="showWhatContent===SHOW_ARTICLE_LIST">
       <nz-list class="article-list"
                [nzDataSource]="articleList"

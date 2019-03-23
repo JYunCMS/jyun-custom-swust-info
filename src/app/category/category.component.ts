@@ -125,48 +125,61 @@ export class CategoryComponent implements OnInit {
   }
 
   private initMasterContent() {
-    let currentNode = this.breadcrumbNodes[this.breadcrumbNodes.length - 1];
-    do {
-      if (currentNode.origin.customPage != null && currentNode.origin.customPage !== '') {
-        // 有节点自定义页，展示自定义页
-        this.showWhatContent = this.SHOW_CUSTOM_PAGE;
-        this.customPageContent = this.sanitizer.bypassSecurityTrustHtml(currentNode.origin.customPage);
-        return;
-      } else if (!currentNode.isLeaf) {
-        // 没有节点自定义页，又不是叶子结点，继续向下搜索
-        currentNode = currentNode.children[0];
-        this.breadcrumbNodes.push(currentNode);
-      } else {
-        // 叶子结点没有自定义页，展示叶子结点文章列表
-        this.initLoading = true;
-        this.showWhatContent = this.SHOW_ARTICLE_LIST;
-        this.currentShowArticleListCategoryUrlAlias = currentNode.key;
-        this.currentPageNumber = 0;
-        this.requestService.getArticlesByCategory(currentNode.key, 0, 10)
-          .subscribe(result => {
-            if (result == null) {
-              this.initLoading = false;
-              this.nzMsgService.error('数据请求出错，请检查网络连接！');
-            } else if (result.length === 0) {
-              this.initLoading = false;
-              this.articleListData = [];
-              this.articleList = [];
-              this.showLoadingMore = false;
-            } else {
-              this.initLoading = false;
-              this.articleListData = result;
-              this.articleList = result;
-              this.showLoadingMore = true;
-            }
-          });
-        return;
+    const currentNode = this.breadcrumbNodes[this.breadcrumbNodes.length - 1];
+    if (currentNode.origin.customPage != null && currentNode.origin.customPage !== '') {
+      // 有节点自定义页，展示自定义页
+      this.showWhatContent = this.SHOW_CUSTOM_PAGE;
+      this.customPageContent = this.sanitizer.bypassSecurityTrustHtml(currentNode.origin.customPage);
+      return;
+    } else if (!currentNode.isLeaf) {
+      // 没有节点自定义页，又不是叶子结点，继续向下一级分类前进
+      const urlSegmentList: string[] = [];
+      for (const node of this.breadcrumbNodes) {
+        urlSegmentList.push(node.key);
       }
+      urlSegmentList.push(currentNode.children[0].key);
+      this.router.navigate(urlSegmentList);
+      return;
+    } else {
+      // 叶子结点没有自定义页，展示叶子结点文章列表
+      this.initLoading = true;
+      this.showWhatContent = this.SHOW_ARTICLE_LIST;
+      this.currentShowArticleListCategoryUrlAlias = currentNode.key;
+      this.currentPageNumber = 0;
+      this.requestService.getArticlesByCategory(currentNode.key, 0, 10)
+        .subscribe(result => {
+          if (result == null) {
+            this.initLoading = false;
+            this.nzMsgService.error('数据请求出错，请检查网络连接！');
+          } else if (result.length === 0) {
+            this.initLoading = false;
+            this.articleListData = [];
+            this.articleList = [];
+            this.showLoadingMore = false;
+          } else {
+            this.initLoading = false;
+            this.articleListData = result;
+            this.articleList = result;
+            this.showLoadingMore = true;
+          }
+        });
+      return;
     }
-    while (true);
   }
 
   goCategory(event: NzFormatEmitEvent) {
     let node = event.node;
+    const urlSegmentList: string[] = [];
+    do {
+      urlSegmentList.push(node.key);
+      node = node.parentNode;
+    } while (node != null);
+    urlSegmentList.reverse();
+    this.router.navigate(urlSegmentList);
+  }
+
+  goCategory2(breadNode: NzTreeNode) {
+    let node = breadNode;
     const urlSegmentList: string[] = [];
     do {
       urlSegmentList.push(node.key);
