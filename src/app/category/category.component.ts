@@ -1,12 +1,11 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, NavigationEnd, Router, UrlSegment } from '@angular/router';
 import { AppComponent } from '../app.component';
-import { NzFormatEmitEvent, NzTreeNode } from 'ng-zorro-antd';
+import { NzFormatEmitEvent, NzMessageService, NzTreeNode } from 'ng-zorro-antd';
 import { RequestService } from '../request.service';
 import { Article } from '../domain/article';
-
-const count = 5;
-const fakeDataUrl = 'https://randomuser.me/api/?results=5&inc=name,gender,email,nat&noinfo';
+import { DomSanitizer } from '@angular/platform-browser';
+import { BackEndApi } from '../back-end-api';
 
 @Component({
   selector: 'app-category',
@@ -16,42 +15,56 @@ const fakeDataUrl = 'https://randomuser.me/api/?results=5&inc=name,gender,email,
 
 export class CategoryComponent implements OnInit {
 
+  backEndHostAddress = BackEndApi.hostAddress;
+
+  // 标记当前核心区域展示内容
+  showWhatContent = '';
+  SHOW_CUSTOM_PAGE = 'show-custom-page';
+  SHOW_ARTICLE = 'show-article';
+  SHOW_ARTICLE_LIST = 'show-article-list';
+
+  // 导航相关
   nodes: NzTreeNode[] = [];
   breadcrumbNodes: NzTreeNode[] = [];
   is404Url = true;
 
-  initLoading = true;
-  loadingMore = false;
+  // 自定义页面内容
+  customPageContent: any;
+
+  // 文章内容
+  article: Article;
+  articleContent: any;
+
+  // 文章列表相关内容
+  initLoading = false;
+  showLoadingMore = true;
   articleList: Article[] = [];
   articleListData: Article[] = [];
+  currentPageNumber: number;
+  currentShowArticleListCategoryUrlAlias: string;
 
   constructor(
     private route: ActivatedRoute,
     private router: Router,
-    private requestService: RequestService
+    private requestService: RequestService,
+    private sanitizer: DomSanitizer,
+    private nzMsgService: NzMessageService,
   ) {
   }
 
   ngOnInit() {
-    this.initCurrentSecondLevelNodeListWhenNgInit(this.route.snapshot.url);
-
+    // 首次进入初始化
+    this.initWhenNgInit(this.route.snapshot.url);
+    // 路由事件也初始化一次
     this.router.events
       .subscribe(event => {
         if (event instanceof NavigationEnd) {
-          this.initCurrentSecondLevelNodeListWhenRouterEvent(event.urlAfterRedirects);
+          this.initWhenRouterEvent(event.urlAfterRedirects);
         }
       });
-
-    this.requestService.getArticlesByCategory('xueyuanjianjie', 0, 3)
-      .subscribe(result => {
-        this.articleListData = result;
-        this.articleList = result;
-        this.initLoading = false;
-      });
-
   }
 
-  private initCurrentSecondLevelNodeListWhenNgInit(url: UrlSegment[]) {
+  private initWhenNgInit(url: UrlSegment[]) {
     setTimeout(() => {
       // 初始化 nodes
       for (const node of AppComponent.self.nodes) {
@@ -77,10 +90,13 @@ export class CategoryComponent implements OnInit {
           }
         }
       }
+
+      // 初始化主内容区
+      this.initMasterContent();
     }, 0);
   }
 
-  private initCurrentSecondLevelNodeListWhenRouterEvent(urlAfterRedirects: string) {
+  private initWhenRouterEvent(urlAfterRedirects: string) {
     // 初始化 nodes
     for (const node of AppComponent.self.nodes) {
       if (node.key === urlAfterRedirects.split('/')[1]) {
@@ -103,6 +119,50 @@ export class CategoryComponent implements OnInit {
         }
       }
     }
+
+    // 初始化主内容区
+    this.initMasterContent();
+  }
+
+  private initMasterContent() {
+    let currentNode = this.breadcrumbNodes[this.breadcrumbNodes.length - 1];
+    do {
+      if (currentNode.origin.customPage != null && currentNode.origin.customPage !== '') {
+        // 有节点自定义页，展示自定义页
+        this.showWhatContent = this.SHOW_CUSTOM_PAGE;
+        this.customPageContent = this.sanitizer.bypassSecurityTrustHtml(currentNode.origin.customPage);
+        return;
+      } else if (!currentNode.isLeaf) {
+        // 没有节点自定义页，又不是叶子结点，继续向下搜索
+        currentNode = currentNode.children[0];
+        this.breadcrumbNodes.push(currentNode);
+      } else {
+        // 叶子结点没有自定义页，展示叶子结点文章列表
+        this.initLoading = true;
+        this.showWhatContent = this.SHOW_ARTICLE_LIST;
+        this.currentShowArticleListCategoryUrlAlias = currentNode.key;
+        this.currentPageNumber = 0;
+        this.requestService.getArticlesByCategory(currentNode.key, 0, 10)
+          .subscribe(result => {
+            if (result == null) {
+              this.initLoading = false;
+              this.nzMsgService.error('数据请求出错，请检查网络连接！');
+            } else if (result.length === 0) {
+              this.initLoading = false;
+              this.articleListData = [];
+              this.articleList = [];
+              this.showLoadingMore = false;
+            } else {
+              this.initLoading = false;
+              this.articleListData = result;
+              this.articleList = result;
+              this.showLoadingMore = true;
+            }
+          });
+        return;
+      }
+    }
+    while (true);
   }
 
   goCategory(event: NzFormatEmitEvent) {
@@ -117,13 +177,23 @@ export class CategoryComponent implements OnInit {
   }
 
   onLoadMore(): void {
-    this.loadingMore = true;
-    this.requestService.getArticlesByCategory('xueyuanjianjie', 1, 3)
+    this.initLoading = true;
+    this.showLoadingMore = false;
+    this.currentPageNumber++;
+    this.requestService.getArticlesByCategory(this.currentShowArticleListCategoryUrlAlias, this.currentPageNumber, 5)
       .subscribe(result => {
-        this.articleListData = this.articleListData.concat(result);
-        this.articleList = [...this.articleListData];
-        this.loadingMore = false;
+        if (result == null) {
+          this.initLoading = false;
+          this.nzMsgService.error('数据请求出错，请检查网络连接！');
+        } else if (result.length === 0) {
+          this.initLoading = false;
+          this.nzMsgService.warning('没有更多');
+        } else {
+          this.initLoading = false;
+          this.articleListData = this.articleListData.concat(result);
+          this.articleList = [...this.articleListData];
+          this.showLoadingMore = true;
+        }
       });
   }
-
 }

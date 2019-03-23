@@ -12,7 +12,41 @@
         <a>{{node.title}}</a>
       </nz-breadcrumb-item>
     </nz-breadcrumb>
-    <div>
+    <!-- 展示自定义页 -->
+    <div *ngIf="showWhatContent===SHOW_CUSTOM_PAGE">
+      <div [innerHTML]="customPageContent" style="margin-top: 30px;"></div>
+    </div>
+    <!-- 展示文章 -->
+    <div *ngIf="showWhatContent===SHOW_ARTICLE">
+      <div align="center">
+        <h1>{{article.title}}</h1>
+        <p>
+          作者：{{article.authorId}}
+          <nz-divider nzType="vertical"></nz-divider>
+          创建于：{{article.createdAt}}
+          <nz-divider nzType="vertical"></nz-divider>
+          最近更新：{{article.updatedAt}}
+        </p>
+        <p *ngIf="article.tags.length>0">
+          <i nz-icon type="tags"></i> 标签：
+          <nz-tag [nzColor]="'blue'" *ngFor="let tag of article.tags">{{tag}}</nz-tag>
+        </p>
+      </div>
+      <div [innerHTML]="articleContent" style="margin-top: 30px;"></div>
+      <br/>
+      <table *ngFor="let resource of article.accessories">
+        <tr>
+          <td><strong><i nz-icon type="link"></i> 附件：</strong></td>
+          <td>
+            <a href="{{backEndHostAddress}}/{{resource.location}}" target="_blank">
+              <nz-tag><span style="font-size: larger; color: #1890ff;">{{resource.originalFilename}}</span></nz-tag>
+            </a>
+          </td>
+        </tr>
+      </table>
+    </div>
+    <!-- 展示文章列表 -->
+    <div *ngIf="showWhatContent===SHOW_ARTICLE_LIST">
       <nz-list class="article-list"
                [nzDataSource]="articleList"
                [nzItemLayout]="'horizontal'"
@@ -36,7 +70,7 @@
         </ng-template>
         <ng-template #loadMore>
           <div class="load-more">
-            <button nz-button *ngIf="!loadingMore" (click)="onLoadMore()">loading more</button>
+            <button nz-button *ngIf="showLoadingMore" (click)="onLoadMore()">loading more</button>
           </div>
         </ng-template>
       </nz-list>

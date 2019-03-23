@@ -3,6 +3,7 @@ import { NzMessageService, NzTreeNode } from 'ng-zorro-antd';
 import { RequestService } from './request.service';
 import { Category } from './domain/category';
 import { Router } from '@angular/router';
+import { DomSanitizer } from '@angular/platform-browser';
 
 @Component({
   selector: 'app-root',
