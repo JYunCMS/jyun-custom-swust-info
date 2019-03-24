@@ -72,6 +72,7 @@ export class CategoryComponent implements OnInit {
         if (node.key === url[0].path) {
           this.nodes = node.getChildren();
           this.is404Url = false;
+          break;
         }
       }
 
@@ -98,6 +99,11 @@ export class CategoryComponent implements OnInit {
   }
 
   private initWhenRouterEvent(urlAfterRedirects: string) {
+    // 如果是首页，停止初始化
+    if (urlAfterRedirects === '/') {
+      return;
+    }
+
     // 初始化 nodes
     for (const node of AppComponent.self.nodes) {
       if (node.key === urlAfterRedirects.split('/')[1]) {

@@ -3,7 +3,7 @@
     <ul nz-menu [nzMode]="'horizontal'" style="background: #fff; height: 100%;">
       <li nz-submenu *ngFor="let node of nodes" (click)="goCategory(node)">
         <span title>{{node.title}}</span>
-        <ul>
+        <ul *ngIf="node.key!=='home'">
           <li nz-menu-item *ngFor="let subNode of node.children" (click)="goCategory(subNode)">{{subNode.title}}</li>
         </ul>
       </li>

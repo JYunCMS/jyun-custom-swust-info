@@ -1,3 +1,29 @@
-<p>
-  home works!
-</p>
+<div style="width: 100%; height: 23.44vw;">
+  <nz-carousel nzAutoPlay [nzEffect]="'fade'" [nzEnableSwipe]="'false'">
+    <div nz-carousel-content *ngFor="let carouselIndex of carouselArray"
+         style="width: 100%; height: 23.44vw;">
+      <img [src]="carouselIndex" alt="carousel" style="width: 100%; height: 100%;">
+    </div>
+  </nz-carousel>
+</div>
+<div>
+  <div *ngFor="let node of nodes" style="display: inline-block; width: 33.33%;">
+    <nz-card [nzTitle]="titleTemplate" [nzExtra]="extraTemplate">
+      <div *ngFor="let article of nodesArticleList[node.origin.sequence-1]">
+        <p style="width: 80%; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; float: left;">
+          <a [routerLink]="'home/' + node.key + '/' + article.id + '.html'">{{article.title}}</a>
+        </p>
+        <span
+          style="width: 20%; text-align: right; float: right;">
+          {{article.createdAt.toString().substring(5, 10)}}
+        </span>
+      </div>
+    </nz-card>
+    <ng-template #titleTemplate>
+      <strong>{{node.title}}</strong>
+    </ng-template>
+    <ng-template #extraTemplate>
+      <a [routerLink]="'home/' + node.key">更多 >></a>
+    </ng-template>
+  </div>
+</div>
