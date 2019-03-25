@@ -5,6 +5,7 @@ import { Category } from './domain/category';
 import { BackEndApi } from './back-end-api';
 import { catchError } from 'rxjs/operators';
 import { Article } from './domain/article';
+import { Options } from './domain/options';
 
 @Injectable({
   providedIn: 'root'
@@ -15,6 +16,11 @@ export class RequestService {
   constructor(
     private http: HttpClient,
   ) {
+  }
+
+  getOptions(): Observable<Options[]> {
+    return this.http.get<Options[]>(BackEndApi.options)
+      .pipe(catchError(this.handleError<Options[]>('getOptions()')));
   }
 
   getNodes(): Observable<Category[]> {

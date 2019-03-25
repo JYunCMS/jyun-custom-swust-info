@@ -5,6 +5,9 @@ import { RequestService } from '../request.service';
 import { DomSanitizer } from '@angular/platform-browser';
 import { AppComponent } from '../app.component';
 import { Article } from '../domain/article';
+import { Options } from '../domain/options';
+import { OptionsFields } from '../config/options-fields';
+import { BackEndApi } from '../back-end-api';
 
 @Component({
   selector: 'app-home',
@@ -14,12 +17,7 @@ import { Article } from '../domain/article';
 
 export class HomeComponent implements OnInit {
 
-  carouselArray = [
-    'http://localhost:8080/upload_dir/2019-03/1553378271058.png',
-    'https://localhost:4200/assets/img/JYunCMS-Logo.png',
-    'http://localhost:8080/upload_dir/2019-03/1553378271058.png',
-    'https://localhost:4200/assets/img/JYunCMS-Logo.png'
-  ];
+  carouselArray: string[] = [];
 
   // 导航相关
   nodes: NzTreeNode[] = [];
@@ -35,6 +33,16 @@ export class HomeComponent implements OnInit {
   }
 
   ngOnInit() {
+    // 获取 options 列表
+    this.requestService.getOptions()
+      .subscribe(result => {
+        if (result == null) {
+          this.nzMsgService.error('数据请求出错，请检查网络连接！');
+        } else {
+          this.initOptionsData(result);
+        }
+      });
+
     setTimeout(() => {
       // 初始化 nodes
       for (const node of AppComponent.self.nodes) {
@@ -46,6 +54,19 @@ export class HomeComponent implements OnInit {
       // 初始化每个 node 的文章列表
       this.initNodesArticleList(0);
     }, 0);
+  }
+
+  private initOptionsData(options: Options[]) {
+    for (const option of options) {
+      switch (option.name) {
+        case OptionsFields.HOME_CAROUSEL_IMAGES:
+          // 首页轮播图
+          for (const homeCarouselImages of option.value.content) {
+            this.carouselArray.push(BackEndApi.hostAddress + '/' + homeCarouselImages.imageLocation);
+          }
+          break;
+      }
+    }
   }
 
   private initNodesArticleList(index: number) {
