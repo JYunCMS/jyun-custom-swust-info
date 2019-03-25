@@ -1,13 +1,14 @@
 import { Component, OnInit } from '@angular/core';
 import { NzMessageService, NzTreeNode } from 'ng-zorro-antd';
 import { ActivatedRoute, Router } from '@angular/router';
-import { RequestService } from '../request.service';
+import { RequestService } from '../../service/request.service';
 import { DomSanitizer } from '@angular/platform-browser';
 import { AppComponent } from '../app.component';
-import { Article } from '../domain/article';
-import { Options } from '../domain/options';
-import { OptionsFields } from '../config/options-fields';
-import { BackEndApi } from '../back-end-api';
+import { Article } from '../../domain/article';
+import { Options } from '../../domain/options';
+import { OptionsFields } from '../../config/options-fields';
+import { BackEndApi } from '../../config/back-end-api';
+import { FriendlyLinks } from '../../domain/options/friendly-links';
 
 @Component({
   selector: 'app-home',
@@ -17,11 +18,15 @@ import { BackEndApi } from '../back-end-api';
 
 export class HomeComponent implements OnInit {
 
-  carouselArray: string[] = [];
-
   // 导航相关
   nodes: NzTreeNode[] = [];
   nodesArticleList: Article[][] = [];
+
+  // 轮播图
+  carouselArray: string[] = [];
+
+  // 友情链接
+  friendlyLinksArray: FriendlyLinks[] = [];
 
   constructor(
     private route: ActivatedRoute,
@@ -33,17 +38,11 @@ export class HomeComponent implements OnInit {
   }
 
   ngOnInit() {
-    // 获取 options 列表
-    this.requestService.getOptions()
-      .subscribe(result => {
-        if (result == null) {
-          this.nzMsgService.error('数据请求出错，请检查网络连接！');
-        } else {
-          this.initOptionsData(result);
-        }
-      });
 
     setTimeout(() => {
+      // 初始化 options 列表数据
+      this.initOptionsData(AppComponent.self.optionsList);
+
       // 初始化 nodes
       for (const node of AppComponent.self.nodes) {
         if (node.key === 'home') {
@@ -64,6 +63,10 @@ export class HomeComponent implements OnInit {
           for (const homeCarouselImages of option.value.content) {
             this.carouselArray.push(BackEndApi.hostAddress + '/' + homeCarouselImages.imageLocation);
           }
+          break;
+        case OptionsFields.FRIENDLY_LINKS:
+          // 友情链接
+          this.friendlyLinksArray = option.value.content;
           break;
       }
     }

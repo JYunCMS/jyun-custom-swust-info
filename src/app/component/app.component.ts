@@ -1,8 +1,12 @@
 import { Component, OnInit } from '@angular/core';
 import { NzMessageService, NzTreeNode } from 'ng-zorro-antd';
-import { RequestService } from './request.service';
-import { Category } from './domain/category';
+import { RequestService } from '../service/request.service';
+import { Category } from '../domain/category';
 import { Router } from '@angular/router';
+import { Options } from '../domain/options';
+import { OptionsFields } from '../config/options-fields';
+import { CopyrightInfo } from '../domain/options/copyright-info';
+import { WebsiteFilingInfo } from '../domain/options/website-filing-info';
 
 @Component({
   selector: 'app-root',
@@ -15,6 +19,10 @@ export class AppComponent implements OnInit {
   static self: AppComponent;
 
   nodes: NzTreeNode[] = [];
+  optionsList: Options[] = [];
+
+  copyrightInfo: CopyrightInfo = new CopyrightInfo('');
+  websiteFilingInfo: WebsiteFilingInfo = new WebsiteFilingInfo('');
 
   constructor(
     private requestService: RequestService,
@@ -26,6 +34,18 @@ export class AppComponent implements OnInit {
   ngOnInit(): void {
     AppComponent.self = this;
 
+    // 获取 options 列表
+    this.requestService.getOptions()
+      .subscribe(result => {
+        if (result == null) {
+          this.nzMsgService.error('数据请求出错，请检查网络连接！');
+        } else {
+          this.optionsList = result;
+          this.initOptionsData(this.optionsList);
+        }
+      });
+
+    // 获取 categories 列表
     this.requestService.getNodes()
       .subscribe(categories => {
         if (categories == null) {
@@ -49,6 +69,20 @@ export class AppComponent implements OnInit {
     } while (node != null);
     urlSegmentList.reverse();
     this.router.navigate(urlSegmentList);
+  }
+
+  private initOptionsData(optionsList: Options[]) {
+    for (const option of optionsList) {
+      switch (option.name) {
+        case OptionsFields.COPYRIGHT_INFO:
+          // 版权信息
+          this.copyrightInfo = option.value.content;
+          break;
+        case OptionsFields.WEBSITE_FILING_INFO:
+          this.websiteFilingInfo = option.value.content;
+          break;
+      }
+    }
   }
 
   private initNodes(nodes: NzTreeNode[], categories: Category[]) {

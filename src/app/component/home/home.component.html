@@ -27,3 +27,8 @@
     </ng-template>
   </div>
 </div>
+<div>
+  <span *ngFor="let friendlyLink of friendlyLinksArray">&nbsp;&nbsp;&nbsp;&nbsp;
+    <a [href]="friendlyLink.link" target="_blank">{{friendlyLink.title}}</a>
+  </span>
+</div>

@@ -2,10 +2,10 @@ import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, NavigationEnd, Router, UrlSegment } from '@angular/router';
 import { AppComponent } from '../app.component';
 import { NzFormatEmitEvent, NzMessageService, NzTreeNode } from 'ng-zorro-antd';
-import { RequestService } from '../request.service';
-import { Article } from '../domain/article';
+import { RequestService } from '../../service/request.service';
+import { Article } from '../../domain/article';
 import { DomSanitizer } from '@angular/platform-browser';
-import { BackEndApi } from '../back-end-api';
+import { BackEndApi } from '../../config/back-end-api';
 
 @Component({
   selector: 'app-category',
