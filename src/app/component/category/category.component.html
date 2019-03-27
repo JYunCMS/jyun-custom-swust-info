@@ -1,23 +1,35 @@
 <div nz-row>
-  <div nz-col nzSpan="4">
+  <div nz-col nzSpan="6">
     <nz-tree
       [nzData]="nodes"
       (nzClick)="goCategory($event)"
       nzExpandAll>
+      <ng-template #nzTreeTemplate let-node>
+        <div class="category-item"
+             style="">
+          <div style="padding-left: 10px; padding-top: 5px;">
+            <i nz-icon type="appstore"></i>&nbsp;&nbsp;
+            <span style="color: #2b2b2b;">{{node.title}}</span>
+          </div>
+        </div>
+      </ng-template>
     </nz-tree>
   </div>
-  <div nz-col nzSpan="20">
+  <div nz-col nzSpan="18" style="padding: 0 25px;">
     <nz-breadcrumb>
+      <nz-breadcrumb-item>
+        <i nz-icon type="home" style="color: #2b2b2b;"></i>
+      </nz-breadcrumb-item>
       <nz-breadcrumb-item *ngFor="let node of breadcrumbNodes">
-        <a (click)="goCategory2(node)">{{node.title}}</a>
+        <a (click)="goCategory2(node)" style="font-weight: bold;">{{node.title}}</a>
       </nz-breadcrumb-item>
     </nz-breadcrumb>
     <!-- 当……时候，展示自定义页 -->
-    <div *ngIf="showWhatContent===SHOW_CUSTOM_PAGE">
+    <div class="master-content" *ngIf="showWhatContent===SHOW_CUSTOM_PAGE">
       <div [innerHTML]="customPageContent" style="margin-top: 30px;"></div>
     </div>
     <!-- 当……时候，展示文章 -->
-    <div *ngIf="showWhatContent===SHOW_ARTICLE">
+    <div class="master-content" *ngIf="showWhatContent===SHOW_ARTICLE">
       <div align="center">
         <h1>{{article.title}}</h1>
         <p>
@@ -46,9 +58,8 @@
       </table>
     </div>
     <!-- 当……时候，展示文章列表 -->
-    <div *ngIf="showWhatContent===SHOW_ARTICLE_LIST">
-      <nz-list class="article-list"
-               [nzDataSource]="articleList"
+    <div class="master-content" *ngIf="showWhatContent===SHOW_ARTICLE_LIST">
+      <nz-list [nzDataSource]="articleList"
                [nzItemLayout]="'horizontal'"
                [nzLoading]="initLoading"
                [nzRenderItem]="item"

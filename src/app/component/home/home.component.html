@@ -6,8 +6,8 @@
     </div>
   </nz-carousel>
 </div>
-<div>
-  <div *ngFor="let node of nodes" style="display: inline-block; width: 33.33%;">
+<div style="margin: 0 -1%;">
+  <div *ngFor="let node of nodes" style="display: inline-block; width: 31.33%; margin: 10px 1%;">
     <nz-card [nzTitle]="titleTemplate" [nzExtra]="extraTemplate">
       <div *ngFor="let article of nodesArticleList[node.origin.sequence-1]">
         <p style="width: 80%; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; float: left;">
@@ -20,6 +20,7 @@
       </div>
     </nz-card>
     <ng-template #titleTemplate>
+      <i nz-icon type="ordered-list"></i>&nbsp;&nbsp;
       <strong>{{node.title}}</strong>
     </ng-template>
     <ng-template #extraTemplate>
@@ -28,7 +29,18 @@
   </div>
 </div>
 <div>
-  <span *ngFor="let friendlyLink of friendlyLinksArray">&nbsp;&nbsp;&nbsp;&nbsp;
-    <a [href]="friendlyLink.link" target="_blank">{{friendlyLink.title}}</a>
-  </span>
+  <nz-card [nzTitle]="titleTemplate" [nzBordered]="false">
+    <div style="margin: -20px -28px;">
+      <a nz-card-grid
+         style="width: 19%; margin: 0.5% 0.5%; text-align: center; letter-spacing: 2px; font-weight: bold; font-size: larger;"
+         *ngFor="let friendlyLink of friendlyLinksArray"
+         [href]="friendlyLink.link" target="_blank">
+        {{friendlyLink.title}}
+      </a>
+    </div>
+  </nz-card>
+  <ng-template #titleTemplate>
+    <i nz-icon type="link"></i>&nbsp;&nbsp;
+    <strong>友情链接</strong>
+  </ng-template>
 </div>
