@@ -95,7 +95,7 @@ export class CategoryComponent implements OnInit {
 
       // 初始化主内容区
       this.initMasterContent();
-    }, 0);
+    }, 500);
   }
 
   private initWhenRouterEvent(urlAfterRedirects: string) {

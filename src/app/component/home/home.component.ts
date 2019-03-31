@@ -52,7 +52,7 @@ export class HomeComponent implements OnInit {
 
       // 初始化每个 node 的文章列表
       this.initNodesArticleList(0);
-    }, 0);
+    }, 500);
   }
 
   private initOptionsData(options: Options[]) {
